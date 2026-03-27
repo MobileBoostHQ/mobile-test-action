@@ -1,0 +1,36 @@
+name: 'Trigger GptDriver Tests'
+description: 'Uploads mobile build and PR instructions to our platform.'
+inputs:
+  organisation-id: 
+    description: 'Organisation identifier'
+    required: true
+  app-path: 
+    description: 'Path to the .apk or .ipa'
+    required: true
+  platform:
+    description: 'App platform: either Android or iOS'
+    required: true
+    
+runs:
+  using: "composite"
+  steps:
+    - name: Upload to FastAPI
+      shell: bash
+      env:
+        API_URL: 'https://api.mobileboost.io/builds'
+        ORG_ID: ${{ inputs.organisation-id }}
+        APP_PATH: ${{ inputs.app-path }}
+        PLATFORM: ${{ inputs.platform }}
+        EVENT_PATH: ${{ github.event_path }} # Auto-injected by GitHub, contains PR metadata
+        REPO: ${{ github.repository }}
+        COMMIT: ${{ github.event.pull_request.head.sha }}
+      run: |
+        PR_BODY=$(jq -r '.pull_request.body // empty' < "$EVENT_PATH")
+        
+        curl -X POST "$API_URL" \
+          -F "organisation_id=$ORG_ID" \
+          -F "repo_full_name=$REPO" \
+          -F "commit_sha=$COMMIT" \
+          -F "pr_body=$PR_BODY" \
+          -F "upload_file=@$APP_PATH" \
+          -F "platform=$PLATFORM"

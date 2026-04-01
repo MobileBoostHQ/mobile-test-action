@@ -41,6 +41,7 @@ runs:
         EVENT_PATH: ${{ github.event_path }}
         REPO: ${{ github.repository }}
         COMMIT: ${{ github.event.pull_request.head.sha }}
+        GH_TOKEN: ${{ github.token }}
       run: |
         PR_BODY=$(jq -r '.pull_request.body // empty' < "$EVENT_PATH")
 

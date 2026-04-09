@@ -10,7 +10,10 @@ inputs:
   platform:
     description: 'App platform: either Android or iOS'
     required: false
-    
+  pr-body:
+    description: 'Pull request body text. If omitted, extracted automatically from the GitHub event payload (works only for pull_request events).'
+    required: false
+
 runs:
   using: "composite"
   steps:
@@ -21,12 +24,17 @@ runs:
         ORG_ID: ${{ inputs.organisation-id }}
         APP_PATH: ${{ inputs.app-path }}
         PLATFORM: ${{ inputs.platform }}
+        INPUT_PR_BODY: ${{ inputs.pr-body }}
         EVENT_PATH: ${{ github.event_path }}
         REPO: ${{ github.repository }}
         COMMIT: ${{ github.event.pull_request.head.sha }}
         GH_TOKEN: ${{ github.token }}
       run: |
-        PR_BODY=$(jq -r '.pull_request.body // empty' < "$EVENT_PATH")
+        if [ -n "$INPUT_PR_BODY" ]; then
+          PR_BODY="$INPUT_PR_BODY"
+        else
+          PR_BODY=$(jq -r '.pull_request.body // empty' < "$EVENT_PATH")
+        fi
 
         curl -X POST "$API_URL" \
           -F "organisation_id=$ORG_ID" \

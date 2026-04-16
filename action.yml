@@ -20,7 +20,7 @@ runs:
     - name: Upload to MobileBoost
       shell: bash
       env:
-        API_URL: 'https://api.mobileboost.io/builds'
+        API_URL: 'https://api.mobileboost.io/github_app/tests/execute'
         ORG_ID: ${{ inputs.organisation-id }}
         APP_PATH: ${{ inputs.app-path }}
         PLATFORM: ${{ inputs.platform }}
